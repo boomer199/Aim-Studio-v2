@@ -108,11 +108,9 @@ document.addEventListener('mousemove', function(event) {
     // Limit the camera rotation along the x axis to a certain range
     const minRotationX = -Math.PI / 2 + 0.01; // -90 degrees + a small offset
     const maxRotationX = Math.PI / 2 - 0.01; // 90 degrees - a small offset
-    camera.rotation.x = THREE.Math.clamp(
-      camera.rotation.x - event.movementY * 0.001, // Movement along the x axis
-      minRotationX,
-      maxRotationX
-    );
+
+    camera.rotation.x -= event.movementY * 0.001;
+    
   });
 
 
@@ -137,7 +135,7 @@ document.addEventListener('mousedown', function() {
     }
   });
   
-  
+
 
 // Animate the target by rotating it
 function animate() {
