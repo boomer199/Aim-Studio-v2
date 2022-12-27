@@ -114,18 +114,7 @@ document.addEventListener('exitpointerlock', function() {
 
 // Set up mouse movement listeners
 document.addEventListener('mousemove', function(event) {
-<<<<<<< HEAD
-    // Update the camera rotation based on mouse movement
-    camera.rotation.y -= event.movementX * 0.001; // Movement along the y axis
-  
-    // Limit the camera rotation along the x axis to a certain range
-    const minRotationX = -Math.PI / 2 + 0.01; // -90 degrees + a small offset
-    const maxRotationX = Math.PI / 2 - 0.01; // 90 degrees - a small offset
 
-    camera.rotation.x -= event.movementY * 0.001;
-    
-  });
-=======
   // Update the camera rotation based on mouse movement
   camera.rotation.y -= event.movementX * 0.001; // Movement along the y axis
   camera.rotation.x -= event.movementY * 0.001; // Movement along the x axis
@@ -139,33 +128,11 @@ document.addEventListener('mousemove', function(event) {
     maxRotationX
   );
 });
->>>>>>> 2fec856 ([body] added body and health)
 
 
 
   // Check if the crosshair is intersecting the target on each mouse click (shooting)
 document.addEventListener('mousedown', function() {
-<<<<<<< HEAD
-    // Set the camera direction based on the camera rotation
-    camera.getWorldDirection(cameraDirection);
-  
-    // Set the raycaster origin and direction based on the camera position and direction
-    raycaster.set(camera.position, cameraDirection);
-  
-    // Cast a ray from the camera and get the intersecting objects
-    const intersects = raycaster.intersectObjects([target]);
-  
-    // If the crosshair is intersecting the target, remove the target from the scene
-    if (intersects.length > 0) {
-      scene.remove(target);
-      target.position.x = Math.random() * 6 - 3;
-      target.position.y = Math.random() * 6 - 3;
-      scene.add(target)
-    }
-  });
-  
-
-=======
   // Set the camera direction based on the camera rotation
   camera.getWorldDirection(cameraDirection);
 
@@ -212,7 +179,6 @@ function moveTarget() {
   targetBody.position.y = targetHead.position.y - 0.6;
   console.log('x:', targetHead.position.x, 'y:', targetHead.position.y)
 }
->>>>>>> 2fec856 ([body] added body and health)
 
 // Animate the target by rotating it
 function animate() {
