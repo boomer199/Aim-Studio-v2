@@ -39,6 +39,36 @@
         #settings-form input[type="submit"]:hover {
             background-color: #ddd;
         }
+
+        .list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-item {
+            display: flex;
+            padding: 10px 20px;
+            color: #fff;
+            font-size: 18px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .list-item-link {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+
+        .list-item:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
     </style>
 </head>
 
@@ -50,7 +80,35 @@
         <div class="hero-body">
             <h1 class="title is-1">Aim Studio</h1>
             <h2 class="subtitle is-3">Improve your aim and accuracy with our interactive aim trainer</h2>
-            <a href="./gamemodes/playershot.html" class="button is-large is-primary is-inverted is-rounded">Start Training</a>
+            <ul class="list">
+                <li class="list-item">
+                  <a href="./gamemodes/playershot/playershot.html" class="list-item-link">
+                    Playershot
+                  </a>
+                </li>
+                <li class="list-item">
+                  <a href="./gamemodes/scattershot/scattershot.html" class="list-item-link">
+                    Scattershot
+                  </a>
+                </li>
+                <li class="list-item">
+                  <a href="game3.html" class="list-item-link">
+                    Game Mode 3
+                  </a>
+                </li>
+                <li class="list-item">
+                    <a href="game4.html" class="list-item-link">
+                      Game Mode 4
+                    </a>
+                  </li>
+                  <li class="list-item">
+                    <a href="game5.html" class="list-item-link">
+                      Game Mode 5
+                    </a>
+                  </li>
+              </ul>
+              
+
         </div>
     </section>
 
@@ -62,7 +120,7 @@
                     <div class="card">
                         <div class="card-content">
                             <h3 class="title is-3">Gamemodes</h3>
-                            <p>Aim Studio offers a plethera of gamemodes to hone your hand-eye cordination and spatial
+                            <p>Aim Studio offers a plethora of gamemodes to hone your hand-eye cordination and spatial
                                 accuity for first person shooter games.</p>
                         </div>
                     </div>
