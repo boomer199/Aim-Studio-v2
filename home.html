@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Aim Trainer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <style>
+        .hero {
+            background-size: cover;
+            background-position: center;
+            height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-body {
+            text-align: center;
+            color: white;
+        }
+
+        #settings-form {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        #settings-form input[type="submit"] {
+            background-color: #eee;
+            border: none;
+            color: #444;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 10px;
+        }
+
+        #settings-form input[type="submit"]:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="hero is-primary">
+        <form id="settings-form" action="settings.html">
+            <input type="submit" value="Settings">
+        </form>
+        <div class="hero-body">
+            <h1 class="title is-1">Aim Studio</h1>
+            <h2 class="subtitle is-3">Improve your aim and accuracy with our interactive aim trainer</h2>
+            <a href="./gamemodes/playershot.html" class="button is-large is-primary is-inverted is-rounded">Start Training</a>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <h2 class="title is-2 has-text-centered">Features</h2>
+            <div class="columns">
+                <div class="column">
+                    <div class="card">
+                        <div class="card-content">
+                            <h3 class="title is-3">Gamemodes</h3>
+                            <p>Aim Studio offers a plethera of gamemodes to hone your hand-eye cordination and spatial
+                                accuity for first person shooter games.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="card">
+                        <div class="card-content">
+                            <h3 class="title is-3">Customizable Settings</h3>
+                            <p>Adjust the speed and movement of the targets, as well as the sensitivity of the mouse, to
+                                tailor the aim trainer to your personal preferences</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="card">
+                        <div class="card-content">
+                            <h3 class="title is-3">Idk something here</h3>
+                            <p>something here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

@@ -13,7 +13,7 @@ const renderer = new THREE.WebGLRenderer({ canvas });
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 // Create a sphere as the target's head
-const targetGeometry = new THREE.SphereGeometry(0.25, 32, 32);
+const targetGeometry = new THREE.SphereGeometry(0.20, 32, 32);
 const targetMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000});
 const targetHead = new THREE.Mesh(targetGeometry, targetMaterial);
 
@@ -93,7 +93,7 @@ function updateCrosshairPosition() {
   camera.getWorldDirection(cameraDirection);
 
   // Set the crosshair position to be a fixed distance away from the camera
-  crosshair.position.copy(camera.position).add(cameraDirection.multiplyScalar(1)); // Set the crosshair position to be 0.1 units away from the camera
+  crosshair.position.copy(camera.position).add(cameraDirection.multiplyScalar(1)); // Set the crosshair position to be 1 unit away from the camera
 }
   
 
@@ -106,9 +106,19 @@ canvas.addEventListener('mousedown', function() {
   canvas.requestPointerLock();
 });
 
+document.addEventListener('keydown', event => {
+  if (event.key === '1') {
+    const form = document.createElement('form');
+    form.action = '../home.html';
+    form.method = 'POST';
+    document.body.appendChild(form);
+    form.submit();
+  }
+});
+
+
 document.addEventListener('exitpointerlock', function() {
-    // Reset the camera or display a message here
-    console.log("Pointer Lock Failed to Exit")
+  console.log("Pointer Lock Failed to Exit")
 });
   
 
