@@ -108,7 +108,6 @@ document.addEventListener('exitpointerlock', function() {
   console.log("Pointer Lock Failed to Exit")
 });
   
-
 // Set up mouse movement listeners
 document.addEventListener('mousemove', function(event) {
 

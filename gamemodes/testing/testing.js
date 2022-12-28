@@ -1,6 +1,8 @@
 // Set up the canvas and get the canvas element
 const canvas = document.querySelector('#canvas');
 
+
+let direction = new THREE.Vector3();
 let player = {
   forward: false,
   backward: false,
@@ -128,13 +130,34 @@ scene.add(backWall)
 scene.add(smallWall)
 scene.add(roof)
 
+// Create a crosshair geometry
+const crosshairGeometry = new THREE.SphereGeometry(0.005, 32,32);
+const crosshairMaterial = new THREE.MeshBasicMaterial({ color: 0x00cc00 });
+const crosshair = new THREE.Mesh(crosshairGeometry, crosshairMaterial);
+
+// Position the crosshair in the center of the screen
+crosshair.position.set(0, 8, 1);
+scene.add(crosshair);
+
 // Set up a raycaster
 const raycaster = new THREE.Raycaster();
 // Set up the camera direction
 const cameraDirection = new THREE.Vector3();
 
+function updateCrosshairPosition() {
+    // Set the camera direction based on the camera rotation
+    camera.getWorldDirection(cameraDirection);
+  
+    // Set the crosshair position to be a fixed distance away from the camera
+    crosshair.position.copy(camera.position).add(cameraDirection.multiplyScalar(1)); // Set the crosshair position to be 1 unit away from the camera
+  }
+
+
+
+
 // Set up Pointer Lock controls
-var controls = new THREE.PointerLockControls(camera, renderer.domElement);
+// TODO: ADD SENSIITIVITY THING HERE
+let controls = new THREE.PointerLockControls(camera, renderer.domElement);
 scene.add(controls.getObject());
 
 // Request pointer lock on mousedown
@@ -179,58 +202,22 @@ document.addEventListener('mousedown', function () {
 
 
 
-document.addEventListener('keydown', function(event) {
-  switch(event.key){
-      case "w":
-          player.forward = true
-          break;
-      case "a":
-          player.left = true
-          break;
-      case "s":
-          player.backward = true
-          break;
-      case "d":
-          player.right = true
-          break;
-  }     
-});
-
-document.addEventListener('keyup', function(event) {
-switch(event.key){
-    case "w":
-        player.forward = false
-        break;
-    case "a":
-        player.left = false
-        break;
-    case "s":
-        player.backward = false
-        break;
-    case "d":
-        player.right = false
-        break;
-}     
-});
-
-
-
 function movePlayer() {
     if (player.forward) {
-        camera.position.x -= Math.sin(camera.rotation.y) * 0.25
-        camera.position.z -= Math.cos(camera.rotation.y) * 0.25
+        camera.position.x -= Math.sin(camera.rotation.y) * 0.1
+        camera.position.z -= Math.cos(camera.rotation.y) * 0.1
     }
     if (player.backward) {
-        camera.position.x += Math.sin(camera.rotation.y) * 0.25
-        camera.position.z += Math.cos(camera.rotation.y) * 0.25
+        camera.position.x += Math.sin(camera.rotation.y) * 0.1
+        camera.position.z += Math.cos(camera.rotation.y) * 0.1
     }
     if (player.right) {
-        camera.position.x += 0.25 * Math.sin(camera.rotation.y + Math.PI / 2)
-        camera.position.z += 0.25 * Math.cos(camera.rotation.y + Math.PI / 2)
+        camera.position.x += 0.1 * Math.sin(camera.rotation.y + Math.PI / 2)
+        camera.position.z += 0.1 * Math.cos(camera.rotation.y + Math.PI / 2)
     }
     if (player.left) {
-        camera.position.x += 0.25 * Math.sin(camera.rotation.y - Math.PI / 2)
-        camera.position.z += 0.25 * Math.cos(camera.rotation.y - Math.PI / 2)
+        camera.position.x += 0.1 * Math.sin(camera.rotation.y - Math.PI / 2)
+        camera.position.z += 0.1 * Math.cos(camera.rotation.y - Math.PI / 2)
     }
 }
 
@@ -239,6 +226,7 @@ function movePlayer() {
 function animate() {
   requestAnimationFrame(animate);
   movePlayer()
+  updateCrosshairPosition();
   renderer.setClearColor(0x808080);
   renderer.render(scene, camera);
 }
