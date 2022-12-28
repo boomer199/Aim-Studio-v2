@@ -216,21 +216,42 @@ switch(event.key){
 
 
 function movePlayer() {
-    if (player.forward) {
-        camera.position.x -= Math.sin(camera.rotation.y) * 0.25
-        camera.position.z -= Math.cos(camera.rotation.y) * 0.25
+    camera.getWorldDirection(cameraDirection);
+    if (cameraDirection.z < 0) {
+        if (player.forward) {
+            camera.position.x -= Math.sin(camera.rotation.y) * 0.25
+            camera.position.z -= Math.cos(camera.rotation.y) * 0.25
+        }
+        if (player.backward) {
+            camera.position.x += Math.sin(camera.rotation.y) * 0.25
+            camera.position.z += Math.cos(camera.rotation.y) * 0.25
+        }
+        if (player.right) {
+            camera.position.x += 0.25 * Math.sin(camera.rotation.y + Math.PI / 2)
+            camera.position.z += 0.25 * Math.cos(camera.rotation.y + Math.PI / 2)
+        }
+        if (player.left) {
+            camera.position.x += 0.25 * Math.sin(camera.rotation.y - Math.PI / 2)
+            camera.position.z += 0.25 * Math.cos(camera.rotation.y - Math.PI / 2)
+        }
     }
-    if (player.backward) {
-        camera.position.x += Math.sin(camera.rotation.y) * 0.25
-        camera.position.z += Math.cos(camera.rotation.y) * 0.25
-    }
-    if (player.right) {
-        camera.position.x += 0.25 * Math.sin(camera.rotation.y + Math.PI / 2)
-        camera.position.z += 0.25 * Math.cos(camera.rotation.y + Math.PI / 2)
-    }
-    if (player.left) {
-        camera.position.x += 0.25 * Math.sin(camera.rotation.y - Math.PI / 2)
-        camera.position.z += 0.25 * Math.cos(camera.rotation.y - Math.PI / 2)
+    else {
+        if (player.forward) {
+            camera.position.x -= Math.sin(camera.rotation.y) * 0.25
+            camera.position.z += Math.cos(camera.rotation.y) * 0.25
+        }
+        if (player.backward) {
+            camera.position.x += Math.sin(camera.rotation.y) * 0.25
+            camera.position.z -= Math.cos(camera.rotation.y) * 0.25
+        }
+        if (player.right) {
+            camera.position.x -= 0.25 * Math.sin(camera.rotation.y + Math.PI / 2)
+            camera.position.z += 0.25 * Math.cos(camera.rotation.y + Math.PI / 2)
+        }
+        if (player.left) {
+            camera.position.x -= 0.25 * Math.sin(camera.rotation.y - Math.PI / 2)
+            camera.position.z += 0.25 * Math.cos(camera.rotation.y - Math.PI / 2)
+        }
     }
 }
 
