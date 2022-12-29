@@ -1,48 +1,16 @@
 // Set up the canvas and get the canvas element
 const canvas = document.querySelector('#canvas');
 
-
-let direction = new THREE.Vector3();
 let player = {
-  forward: false,
-  backward: false,
-  left: false,
-  right: false
+    forward: false,
+    backward: false,
+    left: false,
+    right: false,
+    velocity: 0,
+    zoomed: false,
+    crouching: false,
+    movementSpeed: 0.1,
 };
-
-document.addEventListener('keydown', function(event) {
-    switch(event.key){
-        case "w":
-            player.forward = true
-            break;
-        case "a":
-            player.left = true
-            break;
-        case "s":
-            player.backward = true
-            break;
-        case "d":
-            player.right = true
-            break;
-    }     
-});
-
-document.addEventListener('keyup', function(event) {
-  switch(event.key){
-      case "w":
-          player.forward = false
-          break;
-      case "a":
-          player.left = false
-          break;
-      case "s":
-          player.backward = false
-          break;
-      case "d":
-          player.right = false
-          break;
-  }     
-});
 
 // Create a scene
 const scene = new THREE.Scene();
@@ -65,17 +33,17 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap
 
 // Create a sphere as the target's head
-const targetGeometry = new THREE.SphereGeometry(0.25, 32, 32);
-const targetMaterial = new THREE.MeshPhongMaterial({ color: 0xFF0000 });
+const targetGeometry = new THREE.SphereGeometry(0.20, 32, 32);
+const targetMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
 const targetHead = new THREE.Mesh(targetGeometry, targetMaterial);
-targetHead.position.y = 1.5;
+targetHead.position.y = 1.875;
 
 
 // create a capsule as the target's body
-const targetBodyGeometry = new THREE.CapsuleGeometry(0.25, 0.5, 32, 32);
-const targetBodyMaterial = new THREE.MeshPhongMaterial({ color: 0xF0F000 });
+const targetBodyGeometry = new THREE.CapsuleGeometry(0.25, 0.875, 32, 32);
+const targetBodyMaterial = new THREE.MeshBasicMaterial({ color: 0xF0F000 });
 const targetBody = new THREE.Mesh(targetBodyGeometry, targetBodyMaterial);
-targetBody.position.y = 1;
+targetBody.position.y = 1.125;
 
 health = 3
 
@@ -130,104 +98,207 @@ scene.add(backWall)
 scene.add(smallWall)
 scene.add(roof)
 
-// Create a crosshair geometry
-const crosshairGeometry = new THREE.SphereGeometry(0.005, 32,32);
-const crosshairMaterial = new THREE.MeshBasicMaterial({ color: 0x00cc00 });
-const crosshair = new THREE.Mesh(crosshairGeometry, crosshairMaterial);
-
-// Position the crosshair in the center of the screen
-crosshair.position.set(0, 8, 1);
-scene.add(crosshair);
-
 // Set up a raycaster
 const raycaster = new THREE.Raycaster();
 // Set up the camera direction
 const cameraDirection = new THREE.Vector3();
 
+// Set up Pointer Lock controls
+var controls = new THREE.PointerLockControls(camera, renderer.domElement);
+controls.pointerSpeed = 0.485;
+scene.add(controls.getObject());
+
+// Request pointer lock on mousedown
+canvas.addEventListener('mousedown', function () {
+    canvas.requestPointerLock();
+});
+
+document.addEventListener('exitpointerlock', function () {
+    // Reset the camera or display a message here
+    console.log("Pointer Lock Failed to Exit")
+});
+
+// Create a crosshair geometry
+const crosshairGeometry = new THREE.SphereGeometry(0.0065, 32,32);
+const crosshairMaterial = new THREE.MeshBasicMaterial({ color: 0x00cc00 });
+const crosshair = new THREE.Mesh(crosshairGeometry, crosshairMaterial);
+
+// Position the crosshair in the center of the screen
+crosshair.position.set(0, 0, 4);
+scene.add(crosshair);
+
+// Update the position of the crosshair on each frame
 function updateCrosshairPosition() {
     // Set the camera direction based on the camera rotation
     camera.getWorldDirection(cameraDirection);
   
     // Set the crosshair position to be a fixed distance away from the camera
-    crosshair.position.copy(camera.position).add(cameraDirection.multiplyScalar(1)); // Set the crosshair position to be 1 unit away from the camera
-  }
+    if (!player.zoomed){
+         // Set the crosshair position to be 1 unit away from the camera
+        crosshair.position.copy(camera.position).add(cameraDirection.multiplyScalar(1));
+    }
+    if (player.zoomed){
+        // Set the crosshair position to be 1 unit away from the camera
+       crosshair.position.copy(camera.position).add(cameraDirection.multiplyScalar(2.5));
+   }
+}
 
+// Check if the crosshair is intersecting the target on each mouse click (shooting) and zoom on right click
+document.addEventListener('mousedown', function(click) {
+    switch (click.button) {
+        case 2:
+            if (!player.zoomed) {
+                camera.zoom = 2.5;
+                player.zoomed = true;
+                camera.updateProjectionMatrix();
+                controls.pointerSpeed = 0.25;
+                break;
+            } else {
+                camera.zoom = 1;
+                player.zoomed = false;
+                camera.updateProjectionMatrix();
+                controls.pointerSpeed = 0.25;
+                break;
+            }
+        case 0:
+            // Set the camera direction based on the camera rotation
+            camera.getWorldDirection(cameraDirection);
 
+            // Set the raycaster origin and direction based on the camera position and direction
+            raycaster.set(camera.position, cameraDirection);
 
+            // Cast a ray from the camera and get the intersecting objects
+            const headHit = raycaster.intersectObjects([targetHead]);
+            const bodyHit = raycaster.intersectObjects([targetBody]);
 
-// Set up Pointer Lock controls
-// TODO: ADD SENSIITIVITY THING HERE
-let controls = new THREE.PointerLockControls(camera, renderer.domElement);
-scene.add(controls.getObject());
-
-// Request pointer lock on mousedown
-canvas.addEventListener('mousedown', function () {
-  canvas.requestPointerLock();
+            // If the crosshair is intersecting the target, remove the target from the scene
+            if (bodyHit.length > 0) {
+                health -= 1
+            }
+            if (headHit.length > 0 || health <= 0) {
+                scene.remove(targetHead);
+                scene.remove(targetBody)
+                targetHead.position.x = Math.random() * 6 - 3;
+                targetHead.position.z = Math.random() * 6 - 5;
+                targetBody.position.x = targetHead.position.x;
+                targetBody.position.z = targetHead.position.z;
+                scene.add(targetHead)
+                scene.add(targetBody)
+                health = 3
+            }
+            break;
+        default:
+            console.log(`Unknown button code: ${e.button}`);
+    }
 });
 
-document.addEventListener('exitpointerlock', function () {
-  // Reset the camera or display a message here
-  console.log("Pointer Lock Failed to Exit")
+document.addEventListener('keydown', function(event) {
+    switch (event.key) {
+        case "w":
+            player.forward = true
+            break;
+        case "a":
+            player.left = true
+            break;
+        case "s":
+            player.backward = true
+            break;
+        case "d":
+            player.right = true
+            break;
+        case "Shift":
+            camera.position.y -= 0.5;
+            player.crouching = true;
+            break;
+        case " ":
+            if (camera.position.y == 2) {
+                player.velocity = 0.5;
+                break;
+            }
+    }
 });
 
-
-// Check if the crosshair is intersecting the target on each mouse click (shooting)
-document.addEventListener('mousedown', function () {
-  // Set the camera direction based on the camera rotation
-  camera.getWorldDirection(cameraDirection);
-
-  // Set the raycaster origin and direction based on the camera position and direction
-  raycaster.set(camera.position, cameraDirection);
-
-  // Cast a ray from the camera and get the intersecting objects
-  const headHit = raycaster.intersectObjects([targetHead]);
-  const bodyHit = raycaster.intersectObjects([targetBody]);
-
-  // If the crosshair is intersecting the target, remove the target from the scene
-  if (bodyHit.length > 0) {
-    health -= 1
-  }
-  if (headHit.length > 0 || health <= 0) {
-    scene.remove(targetHead);
-    scene.remove(targetBody)
-    targetHead.position.x = Math.random() * 6 - 3;
-    targetHead.position.z = Math.random() * 6 - 5;
-    targetBody.position.x = targetHead.position.x;
-    targetBody.position.z = targetHead.position.z;
-    scene.add(targetHead)
-    scene.add(targetBody)
-    health = 3
-  }
+document.addEventListener('keyup', function(event) {
+    switch (event.key) {
+        case "w":
+            player.forward = false
+            break;
+        case "a":
+            player.left = false
+            break;
+        case "s":
+            player.backward = false
+            break;
+        case "d":
+            player.right = false
+            break;
+        case "Shift":
+            camera.position.y += 0.5;
+            player.crouching = false;
+            break;
+    }
 });
 
 
 
 function movePlayer() {
-    if (player.forward) {
-        camera.position.x -= Math.sin(camera.rotation.y) * 0.1
-        camera.position.z -= Math.cos(camera.rotation.y) * 0.1
+    camera.getWorldDirection(cameraDirection);
+    if (cameraDirection.z < 0) {
+        if (player.forward) {
+            camera.position.x -= Math.sin(camera.rotation.y) * player.movementSpeed;
+            camera.position.z -= Math.cos(camera.rotation.y) * player.movementSpeed;
+        }
+        if (player.backward) {
+            camera.position.x += Math.sin(camera.rotation.y) * player.movementSpeed;
+            camera.position.z += Math.cos(camera.rotation.y) * player.movementSpeed;
+        }
+        if (player.right) {
+            camera.position.x += player.movementSpeed * Math.sin(camera.rotation.y + Math.PI / 2);
+            camera.position.z += player.movementSpeed * Math.cos(camera.rotation.y + Math.PI / 2);
+        }
+        if (player.left) {
+            camera.position.x += player.movementSpeed * Math.sin(camera.rotation.y - Math.PI / 2);
+            camera.position.z += player.movementSpeed * Math.cos(camera.rotation.y - Math.PI / 2);
+        }
     }
-    if (player.backward) {
-        camera.position.x += Math.sin(camera.rotation.y) * 0.1
-        camera.position.z += Math.cos(camera.rotation.y) * 0.1
+    else {
+        if (player.forward) {
+            camera.position.x -= Math.sin(camera.rotation.y) * player.movementSpeed;
+            camera.position.z += Math.cos(camera.rotation.y) * player.movementSpeed;
+        }
+        if (player.backward) {
+            camera.position.x += Math.sin(camera.rotation.y) * player.movementSpeed;
+            camera.position.z -= Math.cos(camera.rotation.y) * player.movementSpeed;
+        }
+        if (player.right) {
+            camera.position.x -= player.movementSpeed * Math.sin(camera.rotation.y + Math.PI / 2);
+            camera.position.z += player.movementSpeed * Math.cos(camera.rotation.y + Math.PI / 2);
+        }
+        if (player.left) {
+            camera.position.x -= player.movementSpeed * Math.sin(camera.rotation.y - Math.PI / 2);
+            camera.position.z += player.movementSpeed * Math.cos(camera.rotation.y - Math.PI / 2);
+        }
     }
-    if (player.right) {
-        camera.position.x += 0.1 * Math.sin(camera.rotation.y + Math.PI / 2)
-        camera.position.z += 0.1 * Math.cos(camera.rotation.y + Math.PI / 2)
+    camera.position.y += player.velocity;
+    player.velocity -= 0.1;
+    if (camera.position.y <= 2 && !player.crouching) {
+        camera.position.y = 2;
+        player.velocity = 0;
     }
-    if (player.left) {
-        camera.position.x += 0.1 * Math.sin(camera.rotation.y - Math.PI / 2)
-        camera.position.z += 0.1 * Math.cos(camera.rotation.y - Math.PI / 2)
+    else if (camera.position.y <= 1.5) {
+        camera.position.y = 1.5;
+        player.velocity = 0;
     }
+
 }
 
 
 // Animate the target by rotating it
 function animate() {
-  requestAnimationFrame(animate);
-  movePlayer()
-  updateCrosshairPosition();
-  renderer.setClearColor(0x808080);
-  renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+    movePlayer()
+    updateCrosshairPosition()
+    renderer.setClearColor(0x808080);
+    renderer.render(scene, camera);
 }
 animate();
