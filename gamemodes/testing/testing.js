@@ -1,6 +1,8 @@
 // Set up the canvas and get the canvas element
 const canvas = document.querySelector('#canvas');
 
+import * as THREE from "three.js"
+
 let player = {
     forward: false,
     backward: false,
@@ -105,7 +107,7 @@ const cameraDirection = new THREE.Vector3();
 
 // Set up Pointer Lock controls
 var controls = new THREE.PointerLockControls(camera, renderer.domElement);
-controls.pointerSpeed = 0.485;
+controls.speedFactor = 0.001; 
 scene.add(controls.getObject());
 
 // Request pointer lock on mousedown
