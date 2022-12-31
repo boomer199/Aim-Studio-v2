@@ -1,8 +1,6 @@
 // Set up the canvas and get the canvas element
 const canvas = document.querySelector('#canvas');
 
-import * as THREE from "three.js"
-
 let player = {
     forward: false,
     backward: false,
@@ -23,7 +21,6 @@ lights[0] = new THREE.PointLight(0xffffff, 1, 0);
 lights[0].position.set(0, 10, 8);
 scene.add(lights[0]);
 
-
 // Create a camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 scene.add(camera)
@@ -40,17 +37,17 @@ const targetMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
 const targetHead = new THREE.Mesh(targetGeometry, targetMaterial);
 targetHead.position.y = 1.875;
 
-
 // create a capsule as the target's body
 const targetBodyGeometry = new THREE.CapsuleGeometry(0.25, 0.875, 32, 32);
 const targetBodyMaterial = new THREE.MeshBasicMaterial({ color: 0xF0F000 });
 const targetBody = new THREE.Mesh(targetBodyGeometry, targetBodyMaterial);
 targetBody.position.y = 1.125;
 
-health = 3
+let health = 3
 
 //Create a floor
 const planeGeometry = new THREE.PlaneGeometry(20, 20, 1, 1);
+const floorGeometry = new THREE.PlaneGeometry(100, 100, 1, 1);
 const planeMaterial = new THREE.MeshPhongMaterial({ color: 0x156289, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true });
 const floor = new THREE.Mesh(planeGeometry, planeMaterial);
 floor.rotation.x = Math.PI / 2;
@@ -64,7 +61,6 @@ scene.add(targetHead);
 scene.add(camera);
 scene.add(floor);
 scene.background = 0x444444;
-
 
 // Create a front wall using the plane geometry and material
 const frontWall = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -121,27 +117,26 @@ document.addEventListener('exitpointerlock', function () {
 });
 
 // Create a crosshair geometry
-const crosshairGeometry = new THREE.SphereGeometry(0.0065, 32,32);
+const crosshairGeometry = new THREE.SphereGeometry(0.005, 32,32);
 const crosshairMaterial = new THREE.MeshBasicMaterial({ color: 0x00cc00 });
 const crosshair = new THREE.Mesh(crosshairGeometry, crosshairMaterial);
 
 // Position the crosshair in the center of the screen
-crosshair.position.set(0, 0, 4);
-scene.add(crosshair);
+crosshair.position.set(0, 0, -0.5);
+camera.add(crosshair);
 
 // Update the position of the crosshair on each frame
-function updateCrosshairPosition() {
+function updateCrosshairSize() {
     // Set the camera direction based on the camera rotation
-    camera.getWorldDirection(cameraDirection);
   
     // Set the crosshair position to be a fixed distance away from the camera
     if (!player.zoomed){
-         // Set the crosshair position to be 1 unit away from the camera
-        crosshair.position.copy(camera.position).add(cameraDirection.multiplyScalar(1));
+         // Set the crosshair position to be 0.5 units away from the camera
+        crosshair.position.z = -0.5;
     }
     if (player.zoomed){
-        // Set the crosshair position to be 1 unit away from the camera
-       crosshair.position.copy(camera.position).add(cameraDirection.multiplyScalar(2.5));
+        // Set the crosshair position to be -1.25 units away from the camera
+       crosshair.position.z = -1.25;
    }
 }
 
@@ -197,24 +192,29 @@ document.addEventListener('mousedown', function(click) {
 document.addEventListener('keydown', function(event) {
     switch (event.key) {
         case "w":
+        case "W":
             player.forward = true
             break;
         case "a":
+        case "A":
             player.left = true
             break;
         case "s":
+        case "S":
             player.backward = true
             break;
         case "d":
+        case "D":
             player.right = true
             break;
         case "Shift":
             camera.position.y -= 0.5;
+            player.movementSpeed = 0.05;
             player.crouching = true;
             break;
         case " ":
-            if (camera.position.y == 2) {
-                player.velocity = 0.5;
+            if (camera.position.y == 2 || (camera.position == 1.5 && player.crouching)) {
+                player.velocity = 0.20;
                 break;
             }
     }
@@ -223,25 +223,28 @@ document.addEventListener('keydown', function(event) {
 document.addEventListener('keyup', function(event) {
     switch (event.key) {
         case "w":
+        case "W":
             player.forward = false
             break;
         case "a":
+        case "A":
             player.left = false
             break;
         case "s":
+        case "S":
             player.backward = false
             break;
         case "d":
+        case "D":
             player.right = false
             break;
         case "Shift":
             camera.position.y += 0.5;
             player.crouching = false;
+            player.movementSpeed = 0.1;
             break;
     }
 });
-
-
 
 function movePlayer() {
     camera.getWorldDirection(cameraDirection);
@@ -282,7 +285,7 @@ function movePlayer() {
         }
     }
     camera.position.y += player.velocity;
-    player.velocity -= 0.1;
+    player.velocity -= 0.01;
     if (camera.position.y <= 2 && !player.crouching) {
         camera.position.y = 2;
         player.velocity = 0;
@@ -294,12 +297,11 @@ function movePlayer() {
 
 }
 
-
 // Animate the target by rotating it
 function animate() {
     requestAnimationFrame(animate);
     movePlayer()
-    updateCrosshairPosition()
+    updateCrosshairSize()
     renderer.setClearColor(0x808080);
     renderer.render(scene, camera);
 }
