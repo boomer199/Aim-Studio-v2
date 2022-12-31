@@ -1,5 +1,23 @@
 {
   "dependencies": {
+    "express": "^4.18.2",
     "three.js": "^0.77.0"
-  }
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "aim-studio-js",
+  "description": "do something here eventually",
+  "version": "1.0.0",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boomer199/Aim-Studio-v2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/boomer199/Aim-Studio-v2/issues"
+  },
+  "homepage": "https://github.com/boomer199/Aim-Studio-v2#readme"
 }
