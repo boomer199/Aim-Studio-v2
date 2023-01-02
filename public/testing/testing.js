@@ -10,9 +10,12 @@ let player = {
     zoomed: false,
     crouching: false,
     movementSpeed: 0.1,
-    sensitivity : 0.2,
+    sensitivity : 0.3,
     scoped_sensitivity: 0.15,
+    boundingBox: new THREE.Box3(),
 };
+
+let walls = [];
 
 // Create a scene
 const scene = new THREE.Scene();
@@ -89,6 +92,10 @@ roof.rotation.x = Math.PI / 2;
 
 const smallWall = new THREE.Mesh(planeGeometry, planeMaterial);
 smallWall.position.set(0, -8.5, 7);
+
+
+walls = [frontWall, leftWall, rightWall, backWall, smallWall, roof]
+
 
 // Add the walls and roof to the scene
 scene.add(frontWall);
@@ -318,6 +325,8 @@ function updatePlayerWalls() {
         camera.position.z = 9.8
     }
   }
+
+  
   
 
 // Animate the target by rotating it
@@ -333,4 +342,6 @@ function animate() {
 
 //setting sens
 controls.pointerSpeed = player.sensitivity; 
+
+//init
 animate();

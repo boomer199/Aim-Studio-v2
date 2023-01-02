@@ -16,6 +16,7 @@ let player = {
 };
 
 let walls = [];
+let targets = [];
 
 // Create a scene
 const scene = new THREE.Scene();
@@ -37,11 +38,16 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap
 
 // Create a sphere as the target's head
-const targetGeometry = new THREE.SphereGeometry(0.20, 32, 32);
+const targetGeometry = new THREE.SphereGeometry(0.40, 32, 32);
 const targetMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
-const targetHead = new THREE.Mesh(targetGeometry, targetMaterial);
-targetHead.position.y = 1.875;
+const target1 = new THREE.Mesh(targetGeometry, targetMaterial);
+const target2 = new THREE.Mesh(targetGeometry, targetMaterial);
+const target3 = new THREE.Mesh(targetGeometry, targetMaterial);
+target1.position.y = 1.875;
+target2.position.y = 1.875;
+target3.position.y = 1.875;
 
+targets = [target1, target2, target3]
 
 let health = 3
 
@@ -54,9 +60,12 @@ floor.rotation.x = Math.PI / 2;
 
 camera.position.z = 8;
 camera.position.y = 2;
-camera.lookAt(targetHead.position);
+camera.lookAt(target1.position);
 
-scene.add(targetHead);
+scene.add(target1);
+scene.add(target2);
+scene.add(target3);
+
 scene.add(camera);
 scene.add(floor);
 scene.background = 0x444444;
@@ -167,16 +176,18 @@ document.addEventListener('mousedown', function(click) {
             raycaster.set(camera.position, cameraDirection);
 
             // Cast a ray from the camera and get the intersecting objects
-            const headHit = raycaster.intersectObjects([targetHead]);
+            const headHit = [raycaster.intersectObjects([target1]), raycaster.intersectObjects([target2]), raycaster.intersectObjects([target3])];
 
+            
             // If the crosshair is intersecting the target, remove the target from the scene
-            if (headHit.length > 0 || health <= 0) {
-                scene.remove(targetHead);
-                targetHead.position.x = Math.random() * 6 - 3;
-                targetHead.position.z = Math.random() * 6 - 5;
-                targetHead.position.y = Math.random() * 3 + 2;
-                scene.add(targetHead)
-                health = 3
+            for(let i = 0; i < headHit.length; i++){
+                if (headHit[i].length > 0 || health <= 0) {
+                    scene.remove(targets[i]);
+                    targets[i].position.x = Math.random() * 6 - 3;
+                    targets[i].position.y = Math.random() * 3 + 2;
+                    scene.add(targets[i])
+                    health = 3
+                }
             }
             break;
         default:
