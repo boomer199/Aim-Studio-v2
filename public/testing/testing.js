@@ -133,6 +133,26 @@ const crosshair = new THREE.Mesh(crosshairGeometry, crosshairMaterial);
 crosshair.position.set(0, 0, -0.5);
 camera.add(crosshair);
 
+// Create a gun geometry
+
+var mtlLoader = new THREE.MTLLoader();
+
+var pistol = undefined;
+mtlLoader.load("Models/uziGoldLongSilencer.mtl", function(materials)
+{
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.load("Models/uziGoldLongSilencer.obj", function(object)
+    {    
+        pistol = object;
+        pistol.rotation.y = Math.PI;
+        pistol.scale.set(4, 4, 4)
+        pistol.position.set(0.3, -0.4, -0.75);
+        camera.add(pistol);
+    });
+});
+
 // Update the position of the crosshair on each frame
 function updateCrosshairSize() {
     // Set the camera direction based on the camera rotation
@@ -175,8 +195,11 @@ document.addEventListener('mousedown', function(click) {
             // Cast a ray from the camera and get the intersecting objects
             const headHit = raycaster.intersectObjects([targetHead]);
             const bodyHit = raycaster.intersectObjects([targetBody]);
-
+            const wallHit = raycaster.intersectObjects([frontWall, backWall, smallWall, leftWall, rightWall, floor, roof]);
             // If the crosshair is intersecting the target, remove the target from the scene
+            if (wallHit > 0) {
+                break;
+            }
             if (bodyHit.length > 0) {
                 health -= 1
             }
@@ -217,11 +240,11 @@ document.addEventListener('keydown', function(event) {
             break;
         case "Shift":
             camera.position.y -= 0.5;
-            player.movementSpeed = 0.05;
+            player.movementSpeed = 0.025;
             player.crouching = true;
             break;
         case " ":
-            if (camera.position.y == 2 || (camera.position == 1.5 && player.crouching)) {
+            if ((!player.crouching && camera.position.y == 2) || (player.crouching && camera.position.y == 1.5)) {
                 player.velocity = 0.20;
                 break;
             }
@@ -305,9 +328,9 @@ function movePlayer() {
 }
 
 function updatePlayerWalls() {    
-    // Check if the player has reached the small wall
-    if (camera.position.z <= 7.2) {
-        camera.position.z = 7.2
+    // Check if the player has reached the front wall
+    if (camera.position.z <= 7.8) {
+        camera.position.z = 7.8;
     }
     
     // Check if the player has reached the right wall
@@ -324,17 +347,15 @@ function updatePlayerWalls() {
     if (camera.position.z >= 9.8) {
         camera.position.z = 9.8
     }
-  }
+}
 
-  
-  
 
 // Animate the target by rotating it
 function animate() {
     requestAnimationFrame(animate);
-    movePlayer()
-    updatePlayerWalls()
-    updateCrosshairSize()
+    movePlayer();
+    updatePlayerWalls();
+    updateCrosshairSize();
     renderer.setClearColor(0x808080);
     renderer.render(scene, camera);
 }
