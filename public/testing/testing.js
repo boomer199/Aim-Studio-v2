@@ -137,19 +137,31 @@ camera.add(crosshair);
 
 var mtlLoader = new THREE.MTLLoader();
 
-var pistol = undefined;
-mtlLoader.load("Models/uziGoldLongSilencer.mtl", function(materials)
-{
+var weaponLeft = undefined;
+var weaponRight = undefined;
+mtlLoader.load("Models/sniperCamo.mtl", function(materials) {
     materials.preload();
     var objLoader = new THREE.OBJLoader();
     objLoader.setMaterials(materials);
-    objLoader.load("Models/uziGoldLongSilencer.obj", function(object)
-    {    
-        pistol = object;
-        pistol.rotation.y = Math.PI;
-        pistol.scale.set(4, 4, 4)
-        pistol.position.set(0.3, -0.4, -0.75);
-        camera.add(pistol);
+    objLoader.load("Models/sniperCamo.obj", function(object) {
+        weaponLeft = object;
+        weaponLeft.rotation.y = Math.PI;
+        weaponLeft.scale.set(3.5, 3.5, 3.5)
+        weaponLeft.position.set(0.3, -0.3, -0.7);
+        camera.add(weaponLeft);
+    });
+});
+
+mtlLoader.load("Models/nothing.mtl", function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);  
+    objLoader.load("Models/nothing.obj", function(object) {
+        weaponRight = object;
+        weaponRight.rotation.y = Math.PI;
+        weaponRight.scale.set(3.5, 3.5, 3.5)
+        weaponRight.position.set(-0.3, -0.3, -0.75);
+        camera.add(weaponRight);
     });
 });
 
@@ -174,12 +186,14 @@ document.addEventListener('mousedown', function(click) {
         case 2:
             if (!player.zoomed) {
                 camera.zoom = 2.5;
+                weaponLeft.position.x = 0;
                 player.zoomed = true;
                 camera.updateProjectionMatrix();
                 controls.pointerSpeed = player.scoped_sensitivity;
                 break;
             } else {
                 camera.zoom = 1;
+                weaponLeft.position.x = 0.3;
                 player.zoomed = false;
                 camera.updateProjectionMatrix();
                 controls.pointerSpeed = player.sensitivity;
@@ -193,17 +207,18 @@ document.addEventListener('mousedown', function(click) {
             raycaster.set(camera.position, cameraDirection);
 
             // Cast a ray from the camera and get the intersecting objects
-            const headHit = raycaster.intersectObjects([targetHead]);
+            const headHit = raycaster.intersectObjects([targetHead]);   
             const bodyHit = raycaster.intersectObjects([targetBody]);
-            const wallHit = raycaster.intersectObjects([frontWall, backWall, smallWall, leftWall, rightWall, floor, roof]);
+            const wallHit = raycaster.intersectObjects([smallWall]);
+            
+            camera.rotation.x += Math.cos(cameraDirection.y)/10; 
+            camera.rotation.z += Math.sin(cameraDirection.y)/10;
+
             // If the crosshair is intersecting the target, remove the target from the scene
             if (wallHit > 0) {
-                break;
+                pass;
             }
-            if (bodyHit.length > 0) {
-                health -= 1
-            }
-            if (headHit.length > 0 || health <= 0) {
+            else if (headHit.length > 0 || health <= 0) {
                 scene.remove(targetHead);
                 scene.remove(targetBody)
                 targetHead.position.x = Math.random() * 6 - 3;
@@ -213,6 +228,9 @@ document.addEventListener('mousedown', function(click) {
                 scene.add(targetHead)
                 scene.add(targetBody)
                 health = 3
+            }
+            else if (bodyHit.length > 0) {
+                health -= 1
             }
             break;
         default:
