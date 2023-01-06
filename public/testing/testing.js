@@ -200,7 +200,7 @@ document.addEventListener('mousedown', function(click) {
             }
             break;
         case 0:
-            if (Date.now() - 1000 < player.last_shot) {
+            if (Date.now() - 150 < player.last_shot) {
                 break;
             }
             bang.load();
