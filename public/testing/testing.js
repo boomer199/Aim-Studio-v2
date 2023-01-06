@@ -13,6 +13,7 @@ let player = {
     sensitivity : 0.3,
     scoped_sensitivity: 0.15,
     boundingBox: new THREE.Box3(),
+    last_shot : 0,
 };
 
 let walls = [];
@@ -138,7 +139,7 @@ camera.add(crosshair);
 var mtlLoader = new THREE.MTLLoader();
 
 var weaponLeft = undefined;
-var weaponRight = undefined;
+var bullet = undefined;
 mtlLoader.load("Models/sniperCamo.mtl", function(materials) {
     materials.preload();
     var objLoader = new THREE.OBJLoader();
@@ -152,16 +153,16 @@ mtlLoader.load("Models/sniperCamo.mtl", function(materials) {
     });
 });
 
-mtlLoader.load("Models/nothing.mtl", function(materials) {
+mtlLoader.load("Models/ammo_sniper.mtl", function(materials) {
     materials.preload();
     var objLoader = new THREE.OBJLoader();
     objLoader.setMaterials(materials);  
-    objLoader.load("Models/nothing.obj", function(object) {
-        weaponRight = object;
-        weaponRight.rotation.y = Math.PI;
-        weaponRight.scale.set(3.5, 3.5, 3.5)
-        weaponRight.position.set(-0.3, -0.3, -0.75);
-        camera.add(weaponRight);
+    objLoader.load("Models/ammo_sniper.obj", function(object) {
+        bullet = object;
+        bullet.rotation.set(-Math.PI/2, 0, 0);
+        bullet.scale.set(3.5, 3.5, 3.5)
+        bullet.position.set(-0.3, -0.3, -0.75);
+        camera.add(bullet);
     });
 });
 
@@ -179,7 +180,7 @@ function updateCrosshairSize() {
        crosshair.position.z = -1.25;
    }
 }
-
+var bang = new Audio('sounds/sniper.mp3');
 // Check if the crosshair is intersecting the target on each mouse click (shooting) and zoom on right click
 document.addEventListener('mousedown', function(click) {
     switch (click.button) {
@@ -190,16 +191,21 @@ document.addEventListener('mousedown', function(click) {
                 player.zoomed = true;
                 camera.updateProjectionMatrix();
                 controls.pointerSpeed = player.scoped_sensitivity;
-                break;
             } else {
                 camera.zoom = 1;
                 weaponLeft.position.x = 0.3;
                 player.zoomed = false;
                 camera.updateProjectionMatrix();
                 controls.pointerSpeed = player.sensitivity;
+            }
+            break;
+        case 0:
+            if (Date.now() - 1000 < player.last_shot) {
                 break;
             }
-        case 0:
+            bang.load();
+            bang.play();
+
             // Set the camera direction based on the camera rotation
             camera.getWorldDirection(cameraDirection);
 
@@ -211,8 +217,6 @@ document.addEventListener('mousedown', function(click) {
             const bodyHit = raycaster.intersectObjects([targetBody]);
             const wallHit = raycaster.intersectObjects([smallWall]);
             
-            camera.rotation.x += Math.cos(cameraDirection.y)/10; 
-            camera.rotation.z += Math.sin(cameraDirection.y)/10;
 
             // If the crosshair is intersecting the target, remove the target from the scene
             if (wallHit > 0) {
@@ -232,6 +236,7 @@ document.addEventListener('mousedown', function(click) {
             else if (bodyHit.length > 0) {
                 health -= 1
             }
+            player.last_shot = Date.now();
             break;
         default:
             console.log(`Unknown button code: ${e.button}`);
@@ -367,10 +372,21 @@ function updatePlayerWalls() {
     }
 }
 
+function moveTarget() {
+    scene.remove(targetHead);
+    scene.remove(targetBody)
+    targetHead.position.x += Math.random() * 0.125 - 0.0625;
+    targetHead.position.z += Math.random() * 0.125 - 0.0625;
+    targetBody.position.x = targetHead.position.x;
+    targetBody.position.z = targetHead.position.z;
+    scene.add(targetHead)
+    scene.add(targetBody)
+}
 
 // Animate the target by rotating it
 function animate() {
     requestAnimationFrame(animate);
+    moveTarget();
     movePlayer();
     updatePlayerWalls();
     updateCrosshairSize();
