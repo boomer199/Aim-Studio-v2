@@ -91,8 +91,10 @@ const roof = new THREE.Mesh(planeGeometry, planeMaterial);
 roof.position.set(0, 20, 0);
 roof.rotation.x = Math.PI / 2;
 
-const smallWall = new THREE.Mesh(planeGeometry, planeMaterial);
-smallWall.position.set(0, -8.5, 7);
+const smallWallGeometry = new THREE.BoxGeometry(20, 1.5, 1);
+const smallWall = new THREE.Mesh(smallWallGeometry, planeMaterial);
+smallWall.position.set(0, 0.75, 7)
+scene.add(smallWall);
 
 
 walls = [frontWall, leftWall, rightWall, backWall, smallWall, roof]
@@ -181,6 +183,8 @@ function updateCrosshairSize() {
    }
 }
 var bang = new Audio('sounds/sniper.mp3');
+var bonk = new Audio('sounds/bonk.mp3');
+
 // Check if the crosshair is intersecting the target on each mouse click (shooting) and zoom on right click
 document.addEventListener('mousedown', function(click) {
     switch (click.button) {
@@ -200,11 +204,9 @@ document.addEventListener('mousedown', function(click) {
             }
             break;
         case 0:
-            if (Date.now() - 150 < player.last_shot) {
+            if (Date.now() - 500 < player.last_shot) {
                 break;
             }
-            bang.load();
-            bang.play();
 
             // Set the camera direction based on the camera rotation
             camera.getWorldDirection(cameraDirection);
@@ -213,28 +215,53 @@ document.addEventListener('mousedown', function(click) {
             raycaster.set(camera.position, cameraDirection);
 
             // Cast a ray from the camera and get the intersecting objects
-            const headHit = raycaster.intersectObjects([targetHead]);   
-            const bodyHit = raycaster.intersectObjects([targetBody]);
-            const wallHit = raycaster.intersectObjects([smallWall]);
-            
+            const Hit = raycaster.intersectObjects([targetHead, targetBody, floor, smallWall, leftWall, rightWall, frontWall, backWall, roof]);
 
             // If the crosshair is intersecting the target, remove the target from the scene
-            if (wallHit > 0) {
-                pass;
+            if (Hit[0].object == floor || 
+                    Hit[0].object == smallWall || 
+                    Hit[0].object == leftWall || 
+                    Hit[0].object == rightWall || 
+                    Hit[0].object == frontWall || 
+                    Hit[0].object == backWall || 
+                    Hit[0].object == roof) {
+                console.log("wall");
+                bonk.load();
+                bonk.play();   
             }
-            else if (headHit.length > 0 || health <= 0) {
+            else if (Hit[0].object == targetHead) {
+                console.log("head");
                 scene.remove(targetHead);
-                scene.remove(targetBody)
+                scene.remove(targetBody);
                 targetHead.position.x = Math.random() * 6 - 3;
                 targetHead.position.z = Math.random() * 6 - 5;
                 targetBody.position.x = targetHead.position.x;
                 targetBody.position.z = targetHead.position.z;
-                scene.add(targetHead)
-                scene.add(targetBody)
-                health = 3
+                scene.add(targetHead);
+                scene.add(targetBody);
+                health -= 3;
+                bang.load();
+                bang.play();    
             }
-            else if (bodyHit.length > 0) {
-                health -= 1
+            else if (Hit[0].object == targetBody) {
+                console.log ("body");
+                health -= 1;
+                bang.load();
+                bang.play();    
+            }
+
+
+            if (health <= 0) {
+                console.log ("out of hp");
+                scene.remove(targetHead);
+                scene.remove(targetBody);
+                targetHead.position.x = Math.random() * 6 - 3;
+                targetHead.position.z = Math.random() * 6 - 5;
+                targetBody.position.x = targetHead.position.x;
+                targetBody.position.z = targetHead.position.z;
+                scene.add(targetHead);
+                scene.add(targetBody);
+                health = 3;
             }
             player.last_shot = Date.now();
             break;
