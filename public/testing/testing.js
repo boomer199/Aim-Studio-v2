@@ -143,34 +143,23 @@ camera.add(crosshair);
 // Create a gun geometry
 
 var mtlLoader = new THREE.MTLLoader();
+var objLoader = new THREE.OBJLoader();
+
 
 var weaponLeft = undefined;
 var bullet = undefined;
-mtlLoader.load("Models/sniperCamo.mtl", function(materials) {
+mtlLoader.load("./Models/pistol.mtl", function(materials) {
     materials.preload();
-    var objLoader = new THREE.OBJLoader();
     objLoader.setMaterials(materials);
-    objLoader.load("Models/sniperCamo.obj", function(object) {
+    objLoader.load("./Models/pistol.obj", function(object) {
         weaponLeft = object;
         weaponLeft.rotation.y = Math.PI;
         weaponLeft.scale.set(3.5, 3.5, 3.5)
-        weaponLeft.position.set(0.3, -0.3, -0.7);
+        weaponLeft.position.set(0.25, -0.3, -0.45);
         camera.add(weaponLeft);
     });
 });
 
-mtlLoader.load("Models/ammo_sniper.mtl", function(materials) {
-    materials.preload();
-    var objLoader = new THREE.OBJLoader();
-    objLoader.setMaterials(materials);  
-    objLoader.load("Models/ammo_sniper.obj", function(object) {
-        bullet = object;
-        bullet.rotation.set(-Math.PI/2, 0, 0);
-        bullet.scale.set(3.5, 3.5, 3.5)
-        bullet.position.set(-0.3, -0.3, -0.75);
-        camera.add(bullet);
-    });
-});
 
 // Update the position of the crosshair on each frame
 function updateCrosshairSize() {
