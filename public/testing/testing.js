@@ -1,6 +1,7 @@
 // Set up the canvas and get the canvas element
 const canvas = document.querySelector('#canvas');
 
+
 let player = {
     forward: false,
     backward: false,
@@ -14,6 +15,9 @@ let player = {
     scoped_sensitivity: 0.15,
     boundingBox: new THREE.Box3(),
     last_shot : 0,
+    score: 0,
+    hitstreak: 0,
+    lastKill: Date.now(),
 };
 
 let walls = [];
@@ -204,7 +208,7 @@ document.addEventListener('mousedown', function(click) {
             }
             break;
         case 0:
-            if (Date.now() - 500 < player.last_shot) {
+            if (Date.now() - 150 < player.last_shot) {
                 break;
             }
 
@@ -228,31 +232,23 @@ document.addEventListener('mousedown', function(click) {
                 console.log("wall");
                 bonk.load();
                 bonk.play();   
+                player.hitstreak = 0;
+                player.score -= 20;
             }
             else if (Hit[0].object == targetHead) {
-                console.log("head");
-                scene.remove(targetHead);
-                scene.remove(targetBody);
-                targetHead.position.x = Math.random() * 6 - 3;
-                targetHead.position.z = Math.random() * 6 - 5;
-                targetBody.position.x = targetHead.position.x;
-                targetBody.position.z = targetHead.position.z;
-                scene.add(targetHead);
-                scene.add(targetBody);
                 health -= 3;
                 bang.load();
                 bang.play();    
             }
             else if (Hit[0].object == targetBody) {
-                console.log ("body");
                 health -= 1;
                 bang.load();
-                bang.play();    
+                bang.play();   
             }
 
 
             if (health <= 0) {
-                console.log ("out of hp");
+                player.hitstreak++; 
                 scene.remove(targetHead);
                 scene.remove(targetBody);
                 targetHead.position.x = Math.random() * 6 - 3;
@@ -262,6 +258,14 @@ document.addEventListener('mousedown', function(click) {
                 scene.add(targetHead);
                 scene.add(targetBody);
                 health = 3;
+
+                if (player.score > player.score + (player.hitstreak * 0.37623) * 100 - ((Date.now() - player.lastKill)/70)){
+                    player.score += 100;
+                } else {
+                    player.score += (player.hitstreak * 0.37623) * 100 - ((Date.now() - player.lastKill)/70)
+                }
+                player.lastKill = Date.now();
+                console.log("Score: " + player.score)
             }
             player.last_shot = Date.now();
             break;
@@ -397,18 +401,46 @@ function updatePlayerWalls() {
     if (camera.position.z >= 9.8) {
         camera.position.z = 9.8
     }
+
 }
 
+let targetSmooth = false;
+let targetSmoothNum = 0;
+
 function moveTarget() {
+    
     scene.remove(targetHead);
-    scene.remove(targetBody)
-    targetHead.position.x += Math.random() * 0.125 - 0.0625;
-    targetHead.position.z += Math.random() * 0.125 - 0.0625;
-    targetBody.position.x = targetHead.position.x;
-    targetBody.position.z = targetHead.position.z;
-    scene.add(targetHead)
-    scene.add(targetBody)
+    scene.remove(targetBody);
+
+    if(targetSmooth){
+        targetHead.position.x += Math.random() * 0.0625;
+        targetBody.position.x = targetHead.position.x;
+        targetBody.position.z = targetHead.position.z;
+        scene.add(targetHead)
+        scene.add(targetBody)
+        if(targetSmoothNum != 60){
+            targetSmoothNum++;
+        } else {
+            targetSmooth = false;
+            targetSmoothNum = 0;
+        }
+    } else {
+        targetHead.position.x -= Math.random() * 0.0625;
+        targetBody.position.x = targetHead.position.x;
+        targetBody.position.z = targetHead.position.z;
+        scene.add(targetHead)
+        scene.add(targetBody)
+        if(targetSmoothNum != 60){
+            targetSmoothNum++;
+        } else {
+            targetSmooth = true;
+            targetSmoothNum = 0;
+        }
+    }
+
+    
 }
+
 
 // Animate the target by rotating it
 function animate() {

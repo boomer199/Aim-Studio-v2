@@ -15,11 +15,20 @@
             z-index: 1;
         }
         
+        #Score {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display:block;
+        }
     </style>
 </head>
 
 <body>
     <canvas id="canvas">
+        <div id="Score"></div>
     </canvas>
     <script src="https://cdn.jsdelivr.net/npm/three@latest/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@latest/examples/js/controls/PointerLockControls.js"></script>
