@@ -16,7 +16,7 @@ let player = {
     boundingBox: new THREE.Box3(),
     last_shot : 0,
     score: 0,
-    hitstreak: 0,
+    hitstreak: 1,
     lastKill: Date.now(),
 };
 
@@ -248,7 +248,7 @@ document.addEventListener('mousedown', function(click) {
                 scene.add(targetBody);
                 health = 3;
 
-                if (player.score > player.score + (player.hitstreak * 0.37623) * 100 - ((Date.now() - player.lastKill)/70)){
+                if (player.score + 100 > player.score + (player.hitstreak * 0.37623) * 100 - ((Date.now() - player.lastKill)/70)){
                     player.score += 100;
                 } else {
                     player.score += (player.hitstreak * 0.37623) * 100 - ((Date.now() - player.lastKill)/70)
