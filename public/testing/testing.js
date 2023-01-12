@@ -1,7 +1,6 @@
 // Set up the canvas and get the canvas element
 const canvas = document.querySelector('#canvas');
 
-//Declaration of Variables
 let player = {
     forward: false,
     backward: false,
@@ -19,55 +18,14 @@ let player = {
     hitstreak: 1,
     lastKill: Date.now(),
 };
-// Enemy Health
-let health = 3
 
-//walls array
 let walls = [];
-//lights array
-const lights = [];
 
 // Create a scene
 const scene = new THREE.Scene();
 
-// Create a camera
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-scene.add(camera)
-
-
-// Set up a raycaster
-const raycaster = new THREE.Raycaster();
-// Set up the camera direction
-const cameraDirection = new THREE.Vector3();
-
-// Set up Pointer Lock controls
-var controls = new THREE.PointerLockControls(camera, renderer.domElement);
-scene.add(controls.getObject());
-
-// Gun mesh and object loader
-var mtlLoader = new THREE.MTLLoader();
-var objLoader = new THREE.OBJLoader();
-var weaponLeft = undefined;
-
-// Sounds
-var bang = new Audio('sounds/sniper.mp3');
-var bonk = new Audio('sounds/bonk.mp3');
- 
-// bullet trail
-const trailMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
-
-// points arr
-const points = [];
-
-// Bullets and trails arr
-let bullets = [];
-let trails = [];
-
-// Smooth movement vars
-let targetSmooth = false;
-let targetSmoothNum = 0;
-
 // Create some lighting
+const lights = [];
 lights[0] = new THREE.PointLight(0xffffff, 0.5, 0);
 lights[0].position.set(-8, 28, 8);
 lights[1] = new THREE.PointLight(0xffffff, 0.5, 0);
@@ -76,6 +34,11 @@ lights[2] = new THREE.PointLight(0xffffff, 0.5, 0);
 lights[2].position.set(0, -0.3, -0.6);
 scene.add(lights[0]);
 scene.add(lights[1]);
+
+// Create a camera
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+scene.add(camera)
+
 camera.add(lights[2]);
 
 
@@ -92,17 +55,24 @@ const targetHead = new THREE.Mesh(targetGeometry, targetMaterial);
 targetHead.position.y = 1.875;
 
 // create a capsule as the target's body
-const targetBodyGeometry = new THREE.CapsuleGeometry(0.25, 0.375, 32, 32);
+const targetBodyGeometry = new THREE.CapsuleGeometry(0.25, 0.575, 32, 32);
 const targetBodyMaterial = new THREE.MeshBasicMaterial({ color: 0xF0F000 });
 const targetBody = new THREE.Mesh(targetBodyGeometry, targetBodyMaterial);
-targetBody.position.y = 1.36;
+targetBody.position.y = 1.3;
 // create a capsule as the target's Legs
-const targetLegGeometry = new THREE.CapsuleGeometry(0.1, 0.5, 32, 32);
+const targetLegGeometry = new THREE.CapsuleGeometry(0.1, 0.75, 32, 32);
 const targetLegMaterial = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
 const targetLegLeft = new THREE.Mesh(targetLegGeometry, targetLegMaterial);
-targetLegLeft.position.y = 0.75;
+targetLegLeft.position.y = .5;
 const targetLegRight = new THREE.Mesh(targetLegGeometry, targetLegMaterial);
-targetLegRight.position.y = 0.75;
+targetLegRight.position.y = .5;
+
+scene.add(targetBody);
+scene.add(targetHead);
+scene.add(targetLegLeft);
+scene.add(targetLegRight);
+
+let health = 3
 
 //Create a floor
 const planeGeometry = new THREE.BoxGeometry(20, 20, 0.1, 1, 1);
@@ -113,6 +83,9 @@ floor.rotation.x = Math.PI / 2;
 camera.position.z = 8;
 camera.position.y = 2;
 camera.lookAt(targetHead.position);
+
+scene.add(camera);
+scene.add(floor);
 scene.background = 0x444444;
 
 // Create a front wall using the plane geometry and material
@@ -155,24 +128,28 @@ scene.add(smallWall);
 let smallWallBB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
 smallWallBB.setFromObject(frontWall);
 
+let bullets = [];
+let trails = [];
+
 walls = [frontWall, leftWall, rightWall, backWall, smallWall, roof]
 
 
-// Add everything to the scene
-
-scene.add(camera);
-scene.add(floor);
+// Add the walls and roof to the scene
 scene.add(frontWall);
 scene.add(rightWall);
 scene.add(leftWall);
 scene.add(backWall)
 scene.add(smallWall)
 scene.add(roof)
-scene.add(targetBody);
-scene.add(targetHead);
-scene.add(targetLegLeft);
-scene.add(targetLegRight);
 
+// Set up a raycaster
+const raycaster = new THREE.Raycaster();
+// Set up the camera direction
+const cameraDirection = new THREE.Vector3();
+
+// Set up Pointer Lock controls
+var controls = new THREE.PointerLockControls(camera, renderer.domElement);
+scene.add(controls.getObject());
 
 // Request pointer lock on mousedown
 canvas.addEventListener('mousedown', function () {
@@ -194,6 +171,13 @@ crosshair.position.set(0, 0, -0.5);
 camera.add(crosshair);
 
 // Create a gun geometry
+
+var mtlLoader = new THREE.MTLLoader();
+var objLoader = new THREE.OBJLoader();
+
+
+var weaponLeft = undefined;
+
 mtlLoader.load("Models/sniperCamo.mtl", function (materials) {
     materials.preload();
     objLoader.setMaterials(materials);
@@ -221,6 +205,10 @@ function updateCrosshairSize() {
         crosshair.position.z = -1.25;
     }
 }
+var bang = new Audio('sounds/sniper.mp3');
+var bonk = new Audio('sounds/bonk.mp3');
+
+const trailMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
 
 // Check if the crosshair is intersecting the target on each mouse click (shooting) and zoom on right click
 document.addEventListener('mousedown', function (click) {
@@ -228,11 +216,13 @@ document.addEventListener('mousedown', function (click) {
         case 2:
             if (!player.zoomed) {
                 camera.zoom = 2.5;
+                weaponLeft.position.x = 0;
                 player.zoomed = true;
                 camera.updateProjectionMatrix();
                 controls.pointerSpeed = player.scoped_sensitivity;
             } else {
                 camera.zoom = 1;
+                weaponLeft.position.x = 0.3;
                 player.zoomed = false;
                 camera.updateProjectionMatrix();
                 controls.pointerSpeed = player.sensitivity;
@@ -285,7 +275,7 @@ document.addEventListener('mousedown', function (click) {
             }
             else if (Hit[0].object == targetLegLeft || Hit[0].object == targetLegRight) {
                 console.log("Leg")
-                health -= 0.75;
+                health -= 0.6;
                 bang.load();
                 bang.play();
                 bulletColor = 0x00ff00
@@ -326,6 +316,7 @@ document.addEventListener('mousedown', function (click) {
             scene.add(bullet);
             bullets.push(bullet);
 
+            const points = [];
             points.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
             points.push(new THREE.Vector3(Hit[hitNumber].point.x, Hit[hitNumber].point.y, Hit[hitNumber].point.z));
             const trailMaterial = new THREE.LineBasicMaterial({ color: bulletColor });
@@ -339,7 +330,7 @@ document.addEventListener('mousedown', function (click) {
             setTimeout(function () {
                 trail.alive = false;
                 scene.remove(trail);
-            }, 1000)
+            }, 500)
 
             break;
         default:
@@ -499,6 +490,8 @@ function updatePlayerWalls() {
 
 }
 
+let targetSmooth = false;
+let targetSmoothNum = 0;
 
 function moveTarget() {
 
@@ -506,9 +499,9 @@ function moveTarget() {
         targetHead.position.x += Math.random() * 0.0625;
         targetBody.position.x = targetHead.position.x;
         targetBody.position.z = targetHead.position.z;
-        targetLegLeft.position.x = targetHead.position.x-0.15;
+        targetLegLeft.position.x = targetHead.position.x-0.125;
         targetLegLeft.position.z = targetHead.position.z;
-        targetLegRight.position.x = targetHead.position.x+0.15;
+        targetLegRight.position.x = targetHead.position.x+0.125;
         targetLegRight.position.z = targetHead.position.z;
         if (targetSmoothNum != 60) {
             targetSmoothNum++;
@@ -520,9 +513,9 @@ function moveTarget() {
         targetHead.position.x -= Math.random() * 0.0625;
         targetBody.position.x = targetHead.position.x;
         targetBody.position.z = targetHead.position.z;
-        targetLegLeft.position.x = targetHead.position.x-0.15;
+        targetLegLeft.position.x = targetHead.position.x-0.125;
         targetLegLeft.position.z = targetHead.position.z;
-        targetLegRight.position.x = targetHead.position.x+0.15;
+        targetLegRight.position.x = targetHead.position.x+0.125;
         targetLegRight.position.z = targetHead.position.z;
         if (targetSmoothNum != 60) {
             targetSmoothNum++;
