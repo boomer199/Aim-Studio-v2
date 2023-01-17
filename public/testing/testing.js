@@ -17,6 +17,7 @@ let player = {
     score: 0,
     hitstreak: 1,
     lastKill: Date.now(),
+    firstShot: true,
 };
 
 let walls = [];
@@ -212,130 +213,138 @@ const trailMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
 
 // Check if the crosshair is intersecting the target on each mouse click (shooting) and zoom on right click
 document.addEventListener('mousedown', function (click) {
-    switch (click.button) {
-        case 2:
-            if (!player.zoomed) {
-                camera.zoom = 2.5;
-                weaponLeft.position.x = 0;
-                player.zoomed = true;
-                camera.updateProjectionMatrix();
-                controls.pointerSpeed = player.scoped_sensitivity;
-            } else {
-                camera.zoom = 1;
-                weaponLeft.position.x = 0.3;
-                player.zoomed = false;
-                camera.updateProjectionMatrix();
-                controls.pointerSpeed = player.sensitivity;
-            }
-            break;
-        case 0:
-            if (Date.now() - 150 < player.last_shot) {
-                break;
-            }
-
-            // Set the camera direction based on the camera rotation
-            camera.getWorldDirection(cameraDirection);
-
-            // Set the raycaster origin and direction based on the camera position and direction
-            raycaster.set(camera.position, cameraDirection);
-
-            // Cast a ray from the camera and get the intersecting objects
-            const Hit = raycaster.intersectObjects([targetHead, targetBody, targetLegLeft, targetLegRight, floor, smallWall, leftWall, rightWall, frontWall, backWall, roof]);
-
-            let bulletColor = 0xffffff
-            hitNumber = 0
-            // If the crosshair is intersecting the target, remove the target from the scene
-            if (Hit[0].object == floor ||
-                Hit[0].object == smallWall ||
-                Hit[0].object == leftWall ||
-                Hit[0].object == rightWall ||
-                Hit[0].object == frontWall ||
-                Hit[0].object == backWall ||
-                Hit[0].object == roof) {
-                bonk.load();
-                bonk.play();
-                bang.load();
-                bang.play();
-                player.hitstreak = 0;
-                player.score -= 20;
-            }
-            else if (Hit[0].object == targetHead) {
-                health -= 3;
-                bang.load();
-                bang.play();
-                bulletColor = 0xff0000
-                hitNumber += 1
-            }
-            else if (Hit[0].object == targetBody) {
-                health -= 1;
-                bang.load();
-                bang.play();
-                bulletColor = 0xffff00
-                hitNumber += 1
-            }
-            else if (Hit[0].object == targetLegLeft || Hit[0].object == targetLegRight) {
-                console.log("Leg")
-                health -= 0.6;
-                bang.load();
-                bang.play();
-                bulletColor = 0x00ff00
-                hitNumber += 1
-            }
-
-            if ((Hit[1].object == targetBody && Hit[0].object == targetHead) || (Hit[0].object == targetBody && Hit[1].object == targetHead) || (Hit[0].object == targetBody && Hit[1].object == targetLegLeft) || (Hit[0].object == targetBody && Hit[1].object == targetLegRight) || (Hit[0].object == targetBody && Hit[1].object == targetHead) || (Hit[0].object == targetLegLeft && Hit[1].object == targetBody) || (Hit[0].object == targetLegRight && Hit[1].object == targetBody)) {
-                hitNumber += 1
-            }
-
-            if (health <= 0) {
-                player.hitstreak++;
-                scene.remove(targetHead);
-                scene.remove(targetBody);
-                targetHead.position.x = Math.random() * 6 - 3;
-                targetHead.position.z = Math.random() * 6 - 5;
-                targetBody.position.x = targetHead.position.x;
-                targetBody.position.z = targetHead.position.z;
-                scene.add(targetHead);
-                scene.add(targetBody);
-                health = 3;
-
-                if (player.score + 100 > player.score + (player.hitstreak * 0.37623) * 100 - ((Date.now() - player.lastKill) / 70)) {
-                    player.score += 100;
-                } else {
-                    player.score += (player.hitstreak * 0.37623) * 100 - ((Date.now() - player.lastKill) / 70)
-                }
-                player.lastKill = Date.now();
-                console.log("Score: " + player.score)
-            }
-            player.last_shot = Date.now();
-
-            var bullet = new THREE.Mesh(new THREE.SphereGeometry(0.05, 32, 32), new THREE.MeshBasicMaterial({ color: bulletColor }));
-
-            bullet.alive = true;
-            bullet.velocity = cameraDirection;
-            bullet.position.set(Hit[hitNumber].point.x, Hit[hitNumber].point.y, Hit[hitNumber].point.z)
-            scene.add(bullet);
-            bullets.push(bullet);
-
-            const points = [];
-            points.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
-            points.push(new THREE.Vector3(Hit[hitNumber].point.x, Hit[hitNumber].point.y, Hit[hitNumber].point.z));
-            const trailMaterial = new THREE.LineBasicMaterial({ color: bulletColor });
-            const trailGeometry = new THREE.BufferGeometry().setFromPoints(points);
-            const trail = new THREE.Line(trailGeometry, trailMaterial);
-            scene.add(trail);
-            setTimeout(function () {
-                bullet.alive = false;
-                scene.remove(bullet);
-            }, 5000);
-            setTimeout(function () {
-                trail.alive = false;
-                scene.remove(trail);
-            }, 500)
-
-            break;
-        default:
-            console.log(`Unknown button code: ${e.button}`);
+    if(gui.style.display == "block"){
+        return
     }
+    if(player.firstShot == true){
+        player.firstShot = false
+    } else {
+        switch (click.button) {
+            case 2:
+                if (!player.zoomed) {
+                    camera.zoom = 2.5;
+                    weaponLeft.position.x = 0;
+                    player.zoomed = true;
+                    camera.updateProjectionMatrix();
+                    controls.pointerSpeed = player.scoped_sensitivity;
+                } else {
+                    camera.zoom = 1;
+                    weaponLeft.position.x = 0.3;
+                    player.zoomed = false;
+                    camera.updateProjectionMatrix();
+                    controls.pointerSpeed = player.sensitivity;
+                }
+                break;
+            case 0:
+                if (Date.now() - 150 < player.last_shot) {
+                    break;
+                }
+    
+                // Set the camera direction based on the camera rotation
+                camera.getWorldDirection(cameraDirection);
+    
+                // Set the raycaster origin and direction based on the camera position and direction
+                raycaster.set(camera.position, cameraDirection);
+    
+                // Cast a ray from the camera and get the intersecting objects
+                const Hit = raycaster.intersectObjects([targetHead, targetBody, targetLegLeft, targetLegRight, floor, smallWall, leftWall, rightWall, frontWall, backWall, roof]);
+    
+                let bulletColor = 0xffffff
+                hitNumber = 0
+                // If the crosshair is intersecting the target, remove the target from the scene
+                if (Hit[0].object == floor ||
+                    Hit[0].object == smallWall ||
+                    Hit[0].object == leftWall ||
+                    Hit[0].object == rightWall ||
+                    Hit[0].object == frontWall ||
+                    Hit[0].object == backWall ||
+                    Hit[0].object == roof) {
+                    bonk.load();
+                    bonk.play();
+                    bang.load();
+                    bang.play();
+                    player.hitstreak = 0;
+                    player.score -= 20;
+                }
+                else if (Hit[0].object == targetHead) {
+                    health -= 3;
+                    bang.load();
+                    bang.play();
+                    bulletColor = 0xff0000
+                    hitNumber += 1
+                }
+                else if (Hit[0].object == targetBody) {
+                    health -= 1;
+                    bang.load();
+                    bang.play();
+                    bulletColor = 0xffff00
+                    hitNumber += 1
+                }
+                else if (Hit[0].object == targetLegLeft || Hit[0].object == targetLegRight) {
+                    console.log("Leg")
+                    health -= 0.6;
+                    bang.load();
+                    bang.play();
+                    bulletColor = 0x00ff00
+                    hitNumber += 1
+                }
+    
+                if ((Hit[1].object == targetBody && Hit[0].object == targetHead) || (Hit[0].object == targetBody && Hit[1].object == targetHead) || (Hit[0].object == targetBody && Hit[1].object == targetLegLeft) || (Hit[0].object == targetBody && Hit[1].object == targetLegRight) || (Hit[0].object == targetBody && Hit[1].object == targetHead) || (Hit[0].object == targetLegLeft && Hit[1].object == targetBody) || (Hit[0].object == targetLegRight && Hit[1].object == targetBody)) {
+                    hitNumber += 1
+                }
+    
+                if (health <= 0) {
+                    player.hitstreak++;
+                    scene.remove(targetHead);
+                    scene.remove(targetBody);
+                    targetHead.position.x = Math.random() * 6 - 3;
+                    targetHead.position.z = Math.random() * 6 - 5;
+                    targetBody.position.x = targetHead.position.x;
+                    targetBody.position.z = targetHead.position.z;
+                    scene.add(targetHead);
+                    scene.add(targetBody);
+                    health = 3;
+    
+                    if (player.score + 100 > player.score + (player.hitstreak * 0.37623) * 100 - ((Date.now() - player.lastKill) / 70)) {
+                        player.score += 100;
+                    } else {
+                        player.score += Math.round((player.hitstreak * 0.37623) * 100 - ((Date.now() - player.lastKill) / 70))
+                    }
+                    player.lastKill = Date.now();
+                    console.log("Score: " + player.score)
+                }
+                player.last_shot = Date.now();
+    
+                var bullet = new THREE.Mesh(new THREE.SphereGeometry(0.05, 32, 32), new THREE.MeshBasicMaterial({ color: bulletColor }));
+    
+                bullet.alive = true;
+                bullet.velocity = cameraDirection;
+                bullet.position.set(Hit[hitNumber].point.x, Hit[hitNumber].point.y, Hit[hitNumber].point.z)
+                scene.add(bullet);
+                bullets.push(bullet);
+    
+                const points = [];
+                points.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
+                points.push(new THREE.Vector3(Hit[hitNumber].point.x, Hit[hitNumber].point.y, Hit[hitNumber].point.z));
+                const trailMaterial = new THREE.LineBasicMaterial({ color: bulletColor });
+                const trailGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                const trail = new THREE.Line(trailGeometry, trailMaterial);
+                scene.add(trail);
+                setTimeout(function () {
+                    bullet.alive = false;
+                    scene.remove(bullet);
+                }, 5000);
+                setTimeout(function () {
+                    trail.alive = false;
+                    scene.remove(trail);
+                }, 500)
+    
+                break;
+            default:
+                console.log(`Unknown button code: ${e.button}`);
+        }
+    }
+
 });
 
 // function updateBulletPositions() {
@@ -414,8 +423,28 @@ document.addEventListener('keyup', function (event) {
             player.crouching = false;
             player.movementSpeed = 0.1;
             break;
+        case "Escape":
+            if (gui.style.display === "none") {
+                gui.style.display = "block";
+            } else {
+                gui.style.display = "none";
+                player.firstShot = true;
+            }
     }
 });
+
+document.addEventListener("pointerlockchange", function(event) {
+    if (document.pointerLockElement === null) {
+        if (gui.style.display === "none") {
+            gui.style.display = "block";
+        } else {
+            gui.style.display = "none";
+            player.firstShot = true;
+        }
+    }
+});
+
+
 
 function movePlayer() {
     camera.getWorldDirection(cameraDirection);
@@ -496,7 +525,7 @@ let targetSmoothNum = 0;
 function moveTarget() {
 
     if (targetSmooth) {
-        targetHead.position.x += Math.random() * 0.0625;
+        targetHead.position.x += Math.random() * 0.03125;
         targetBody.position.x = targetHead.position.x;
         targetBody.position.z = targetHead.position.z;
         targetLegLeft.position.x = targetHead.position.x-0.125;
@@ -510,7 +539,7 @@ function moveTarget() {
             targetSmoothNum = 0;
         }
     } else {
-        targetHead.position.x -= Math.random() * 0.0625;
+        targetHead.position.x -= Math.random() * 0.03125;
         targetBody.position.x = targetHead.position.x;
         targetBody.position.z = targetHead.position.z;
         targetLegLeft.position.x = targetHead.position.x-0.125;
@@ -527,14 +556,40 @@ function moveTarget() {
 }
 
 
+function updateScoreVisuals(){
+    document.getElementById("Score").innerHTML = "Score: " + player.score
+}
+
+
+function escapeMenu(){
+    var gui = document.createElement("div");
+
+    gui.id = "gui";
+    gui.style.position = "absolute";
+    gui.style.top = "0px";
+    gui.style.left = "0px";
+    gui.style.width = "100%";
+    gui.style.height = "100%";
+    gui.style.backgroundColor = "rgba(0, 0, 0, 0.5)"; // semi-transparent black background
+    gui.style.display = "none"; // hide the GUI by default
+    document.body.appendChild(gui);
+}
+
+escapeMenu();
+gui.style.display = "none";
+
+
 // Animate the target by rotating it
 function animate() {
     requestAnimationFrame(animate);
-    moveTarget();
-    movePlayer();
-    updatePlayerWalls();
-    updateCrosshairSize();
-    updateTrailVisiblity();
+    if(gui.style.display == "none"){
+        moveTarget();
+        movePlayer();
+        updatePlayerWalls();
+        updateCrosshairSize();
+        updateTrailVisiblity();
+        updateScoreVisuals();
+    }
     renderer.setClearColor(0x808080);
     renderer.render(scene, camera);
 }
