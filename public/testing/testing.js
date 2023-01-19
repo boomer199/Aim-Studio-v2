@@ -573,6 +573,41 @@ function escapeMenu(){
     gui.style.backgroundColor = "rgba(0, 0, 0, 0.5)"; // semi-transparent black background
     gui.style.display = "none"; // hide the GUI by default
     document.body.appendChild(gui);
+
+
+    var slideContainer = document.createElement("div");
+    var slider = document.createElement("input");
+    var val = document.createElement("div")
+    val.id = "value";
+
+    slider.type = 'range';
+    slider.value = 30;
+    slider.max = 100;
+    slider.min = 1;
+    slider.style.width = "50%";
+    slider.style.margin= "25%"
+    slider.style.marginBottom = "0"
+    slideContainer.prepend(slider);
+  
+    val.innerHTML = "Sensitivity: " + (slider.value/100);
+  
+    slider.oninput = function() {
+      val.innerHTML = "Sensitivity: "+ (this.value/100);
+      console.log(val.innerHTML)
+      player.sensitivity = this.value/100;
+      controls.pointerSpeed = player.sensitivity;
+    }
+
+    val.style.color = "white";
+    val.style.display = "flex"
+    val.style.marginLeft = "41.5%";
+    val.style.fontSize = "24px"
+
+   
+
+    gui.appendChild(slideContainer);
+    slideContainer.appendChild(slider)
+    slideContainer.appendChild(val)
 }
 
 escapeMenu();
