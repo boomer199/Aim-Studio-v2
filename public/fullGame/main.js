@@ -37,10 +37,28 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap
 
 //Create a floor
-const planeGeometry = new THREE.BoxGeometry(20, 20, 0.1, 1, 1);
-const planeMaterial = new THREE.MeshPhongMaterial({ color: 0x156289, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true });
+const planeGeometry = new THREE.BoxGeometry(200, 200, 1, 1, 1);
+const planeMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true });
 const floor = new THREE.Mesh(planeGeometry, planeMaterial);
 floor.rotation.x = Math.PI / 2;
+
+//Create light
+const lights = [];
+lights[0] = new THREE.PointLight(0xffffff, 1, 0);
+lights[0].position.set(0, 100, 0);
+lights[1] = new THREE.PointLight(0xffffff, 0.5, 0);
+lights[1].position.set(200, 100, 200);
+lights[2] = new THREE.PointLight(0xffffff, 0.5, 0);
+lights[2].position.set(-200, 100, -200);
+lights[3] = new THREE.PointLight(0xffffff, 0.5, 0);
+lights[3].position.set(-200, 100, -200);
+lights[4] = new THREE.PointLight(0xffffff, 0.5, 0);
+lights[4].position.set(-200, 100, 200);
+
+for(let i = 0; i < lights.length; i++){
+    scene.add(lights[i]);
+}
+
 
 scene.add(camera);
 scene.add(floor);
