@@ -60,6 +60,61 @@ for(let i = 0; i < lights.length; i++){
 }
 
 
+
+
+// Create the walls
+const wallGeometry = new THREE.BoxGeometry(20, 10, 1);
+const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true });
+
+// Left wall
+const wallLeft = new THREE.Mesh(wallGeometry, wallMaterial);
+wallLeft.position.set(-80, 5, 0);
+scene.add(wallLeft);
+walls.push(wallLeft);
+
+// Right wall
+const wallRight = new THREE.Mesh(wallGeometry, wallMaterial);
+wallRight.position.set(80, 5, 0);
+scene.add(wallRight);
+walls.push(wallRight);
+
+// Top wall
+const wallTop = new THREE.Mesh(wallGeometry, wallMaterial);
+wallTop.rotation.y = Math.PI / 2;
+wallTop.position.set(0, 5, -80);
+scene.add(wallTop);
+walls.push(wallTop);
+
+// Bottom wall
+const wallBottom = new THREE.Mesh(wallGeometry, wallMaterial);
+wallBottom.rotation.y = Math.PI / 2;
+wallBottom.position.set(0, 5, 80);
+scene.add(wallBottom);
+walls.push(wallBottom);
+
+// Create the obstacles
+const obstacleGeometry = new THREE.BoxGeometry(10, 10, 10);
+const obstacleMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true });
+
+// Obstacle 1
+const obstacle1 = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+obstacle1.position.set(-20, 5, 20);
+scene.add(obstacle1);
+walls.push(obstacle1);
+
+// Obstacle 2
+const obstacle2 = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+obstacle2.position.set(40, 5, 40);
+scene.add(obstacle2);
+walls.push(obstacle2);
+
+// Obstacle 3
+const obstacle3 = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+obstacle3.position.set(-60, 5, -40);
+
+
+scene.add(obstacle3);
+walls.push(obstacle3);
 scene.add(camera);
 scene.add(floor);
 scene.background = 0x444444;
@@ -373,6 +428,9 @@ function updateScoreVisuals(){
     document.getElementById("Score").innerHTML = "Score: " + player.score
 }
 
+
+
+
 function escapeMenu(){
     var gui = document.createElement("div");
 
@@ -444,3 +502,5 @@ controls.pointerSpeed = player.sensitivity;
 
 //init
 animate();
+
+// FIXME: DYNAMIC COLLISIONS
